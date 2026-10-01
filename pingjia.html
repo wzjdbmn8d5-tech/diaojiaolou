@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏠 粘土吊脚楼·一句话评价</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "微软雅黑", sans-serif; background: linear-gradient(135deg, #f5e6d3 0%, #e8d5c4 100%); min-height: 100vh; padding: 20px; color: #5c4033; }
+.container { max-width: 720px; margin: 0 auto; }
+
+.header { text-align: center; margin-bottom: 20px; }
+.header h1 { font-size: 22px; color: #8b5a2b; margin-bottom: 5px; }
+.header p { font-size: 13px; color: #a0785a; }
+
+.card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(139,90,43,0.12); }
+
+/* 上传区域 */
+.upload-area { border: 2px dashed #c9a87a; border-radius: 12px; padding: 25px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; background: #fdf8f2; }
+.upload-area:hover, .upload-area:active { background: #f5ebe0; }
+.upload-area input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.upload-text { font-size: 16px; color: #8b5a2b; }
+.upload-hint { font-size: 12px; color: #aaa; margin-top: 5px; }
+#preview { max-width: 100%; max-height: 280px; margin-top: 10px; border-radius: 8px; display: none; }
+
+/* 扫描动画 */
+.scanning { display: none; text-align: center; padding: 15px; color: #8b5a2b; font-size: 14px; }
+.scanning .dots { animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:0.3;} 50%{opacity:1;} }
+
+/* 评语显示 */
+.comment-box { width: 100%; min-height: 80px; border: 2px solid #e8d5c4; border-radius: 12px; padding: 15px; font-size: 18px; line-height: 1.8; resize: none; outline: none; background: #fdf8f2; color: #5c4033; margin-top: 10px; text-align: center; font-weight: bold; }
+
+.btn { display: inline-block; padding: 14px 30px; color: white; border: none; border-radius: 25px; font-size: 16px; cursor: pointer; transition: 0.3s; margin-top: 10px; width: 100%; font-weight: bold; touch-action: manipulation; }
+.btn-magic { background: linear-gradient(135deg, #c9a87a, #8b5a2b); }
+.btn-magic:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(139,90,43,0.4); }
+.btn-magic:disabled { opacity: 0.6; transform: none; }
+.btn-stop { background: linear-gradient(135deg, #f59e0b, #ef4444); margin-top: 10px; }
+.btn-stop:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(239,68,68,0.4); }
+.btn-save { background: linear-gradient(135deg, #ff6b6b, #ffa07a); }
+.btn-clear { background: #ffcdd2; color: #c62828; padding: 8px 20px; font-size: 13px; width: auto; border-radius: 20px; margin-top: 0; border: none; cursor: pointer; }
+
+.record-item { background: #fdf8f2; border-radius: 12px; padding: 15px; margin-bottom: 12px; border-left: 4px solid #c9a87a; }
+.record-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; color: #8b5a2b; }
+.record-img { max-width: 70px; max-height: 70px; border-radius: 6px; float: right; margin-left: 10px; }
+.record-comment { font-size: 14px; color: #5c4033; line-height: 1.6; margin-top: 5px; text-align: left; }
+.empty-tip { text-align: center; color: #bbb; font-size: 14px; padding: 20px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🏠 粘土吊脚楼·一句话评价</h1>
+        <p>拍照上传 → 自动生成一句话评语 → 语音播报</p>
+    </div>
+
+    <div class="card">
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-text">📷 点击拍照或选择吊脚楼作品</div>
+            <div class="upload-hint">支持相机拍照 / 相册选择</div>
+            <input type="file" id="fileInput" accept="image/*">
+            <img id="preview" alt="作品预览">
+        </div>
+
+        <div class="scanning" id="scanning">
+            <div class="dots">🔍 正在看你的吊脚楼...</div>
+        </div>
+
+        <div style="margin-top:15px;font-weight:bold;color:#8b5a2b;">📝 评语</div>
+        <textarea id="commentBox" class="comment-box" readonly placeholder="点击按钮生成评语~"></textarea>
+
+        <button class="btn btn-magic" id="magicBtn">🪄 生成评价+语音播报</button>
+        <button class="btn btn-stop" id="stopBtn">🔇 停止播报</button>
+        <button class="btn btn-save" id="saveBtn">💾 保存评价</button>
+    </div>
+
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-weight:bold;color:#8b5a2b;">📋 历史记录</span>
+            <button class="btn-clear" id="clearBtn">清空记录</button>
+        </div>
+        <div id="recordList">
+            <div class="empty-tip">暂无记录，快去生成第一条吧！</div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== 一句话评语库（每次只抽1句） ==========
+const oneLineComments = [
+    '哇！你的粘土吊脚楼好漂亮呀，像童话里的小房子！',
+    '天哪，这个吊脚楼做得太精致了，我好想住进去看看！',
+    '快看！你做的吊脚楼像从山里搬出来的，好神奇呀！',
+    '宝贝你太厉害了，这个吊脚楼像真的一样，我惊呆啦！',
+    '这栋小楼好有民族风情呀，像去苗寨旅游看到的一样！',
+    '太棒啦！你的吊脚楼做工这么细，以后可以当建筑师哦！',
+    '哎呀，这个房子好可爱呀，我好想在里面喝茶！',
+    '这栋吊脚楼简直是迷你版的古镇建筑，老师给你竖大拇指！',
+    '你做的那些吊脚柱好整齐呀，像一排小士兵站在水里！',
+    '底下的石基捏得好稳，像大树的根一样扎在地上，风吹不倒！',
+    '吊脚柱做得高高的，下雨天水就不会淹到屋里啦，你真聪明！',
+    '中间那层的穿枋结构好清楚，像小房子的骨架一样稳固！',
+    '你居然把每根柱子都捏得一样高，小手真巧！',
+    '屋顶的四个角翘起来啦，像小鸟要飞起来一样，好漂亮！',
+    '飞檐做得好俏皮，像小姑娘扎了两个小辫子！',
+    '屋脊那条线捏得好直，像一条小龙趴在屋顶上！',
+    '你做的屋顶像一把撑开的小伞，下雨天住在里面一定不会淋湿！',
+    '瓦片一片一片贴得好整齐，像鱼鳞一样密密麻麻的！',
+    '三层的比例刚刚好，下面小上面大，像一座小宝塔！',
+    '你用的棕色和灰色搭配得好温暖呀，像秋天的颜色！',
+    '整体造型好饱满，每一面都好看，转着圈看都漂亮！',
+    '你还给吊脚楼做了水面呀，像房子长在水上一样，好仙！',
+    '旁边的小树和吊脚楼配在一起好和谐，像真的小村庄！',
+    '你给房子前面做了小院子，可以晒辣椒和玉米，好有生活气息！',
+    '这个作品值得放在书桌最显眼的地方，每天看着都开心！',
+    '你真是个小小建筑师，以后盖真房子也要这么好看哦！',
+    '抱抱你，今天你又进步啦，我为你骄傲！',
+    '这个吊脚楼我想收藏起来，太好看啦舍不得还给你！',
+    '底层架空的设计很专业哦，这是干栏式建筑最标志性的特点！',
+    '穿枋互相咬合的地方你做得很清楚，这就是中国传统木结构的智慧！'
+];
+
+// ========== 图片预览 ==========
+const fileInput = document.getElementById('fileInput');
+const preview = document.getElementById('preview');
+let currentImageData = '';
+
+fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            currentImageData = e.target.result;
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            document.querySelector('.upload-text').style.display = 'none';
+            document.querySelector('.upload-hint').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// ========== 随机抽一句 ==========
+function generateOneLineComment() {
+    return oneLineComments[Math.floor(Math.random() * oneLineComments.length)];
+}
+
+// ========== 语音播报 ==========
+let currentUtterance = null;
+
+function speakText(text) {
+    window.speechSynthesis.cancel();
+    currentUtterance = new SpeechSynthesisUtterance(text);
+    currentUtterance.lang = 'zh-CN';
+    currentUtterance.rate = 0.8;
+    currentUtterance.pitch = 1.4;
+    currentUtterance.volume = 1;
+
+    const voices = window.speechSynthesis.getVoices();
+    let selectedVoice = voices.find(v => v.name.includes('晓晓') || v.name.includes('Xiaoxiao'))
+        || voices.find(v => v.name.includes('婷') || v.name.includes('Tingting') || v.name.includes('美') || v.name.includes('Mei'))
+        || voices.find(v => v.lang.includes('zh') && (v.name.includes('Female') || v.name.includes('女')))
+        || voices.find(v => v.lang.includes('zh'));
+    if (selectedVoice) currentUtterance.voice = selectedVoice;
+
+    window.speechSynthesis.speak(currentUtterance);
+}
+
+// 预加载语音
+window.speechSynthesis.getVoices();
+window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+
+// ========== 一键评价 ==========
+document.getElementById('magicBtn').addEventListener('click', function() {
+    if (!currentImageData) {
+        alert('请先上传一张粘土吊脚楼作品图片哦！');
+        return;
+    }
+    const btn = this;
+    const scanning = document.getElementById('scanning');
+    btn.disabled = true;
+    btn.textContent = '🔮 正在看你的吊脚楼...';
+    scanning.style.display = 'block';
+    document.getElementById('commentBox').value = '';
+
+    setTimeout(() => {
+        const comment = generateOneLineComment();
+        document.getElementById('commentBox').value = comment;
+        scanning.style.display = 'none';
+        btn.disabled = false;
+        btn.textContent = '🪄 生成评价+语音播报';
+        speakText(comment);
+    }, 1200);
+});
+
+document.getElementById('stopBtn').addEventListener('click', function() {
+    window.speechSynthesis.cancel();
+});
+
+// ========== 保存 ==========
+document.getElementById('saveBtn').addEventListener('click', function() {
+    const comment = document.getElementById('commentBox').value.trim();
+    if (!comment) { alert('还没有评语哦，先点「生成评价」吧！'); return; }
+
+    // 压缩图片再存
+    compressImage(currentImageData, 200, 0.5).then(compressed => {
+        const record = { id: Date.now(), date: new Date().toLocaleString('zh-CN'), comment, image: compressed };
+        let records = JSON.parse(localStorage.getItem('clayBuildingRecords') || '[]');
+        records.unshift(record);
+        localStorage.setItem('clayBuildingRecords', JSON.stringify(records));
+        alert('✅ 评价已保存！');
+        renderRecords();
+    });
+});
+
+// ========== 清空 ==========
+document.getElementById('clearBtn').addEventListener('click', function() {
+    if (confirm('确定要清空所有记录吗？')) {
+        localStorage.removeItem('clayBuildingRecords');
+        renderRecords();
+    }
+});
+
+// ========== 渲染记录 ==========
+function renderRecords() {
+    const records = JSON.parse(localStorage.getItem('clayBuildingRecords') || '[]');
+    const list = document.getElementById('recordList');
+    if (records.length === 0) {
+        list.innerHTML = '<div class="empty-tip">暂无记录，快去生成第一条吧！</div>';
+        return;
+    }
+    list.innerHTML = records.map(r => `
+        <div class="record-item">
+            ${r.image ? `<img src="${r.image}" class="record-img">` : ''}
+            <div class="record-header"><span>🕐 ${r.date}</span></div>
+            <div style="clear:both;"></div>
+            <div class="record-comment">${r.comment}</div>
+        </div>
+    `).join('');
+}
+renderRecords();
+
+// ========== 图片压缩 ==========
+function compressImage(base64, maxW, quality) {
+    return new Promise(resolve => {
+        if (!base64) { resolve(''); return; }
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const scale = maxW / img.width;
+            canvas.width = maxW;
+            canvas.height = img.height * scale;
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = base64;
+    });
+}
+</script>
+</body>
+</html>
